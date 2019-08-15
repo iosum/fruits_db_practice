@@ -4,14 +4,22 @@ const mongoose = require('mongoose');
 mongoose.connect("mongodb://localhost:27017/fruitsDB", { useNewUrlParser: true });
 
 const fruitSchema = new mongoose.Schema ({
-    name: String,
-    rating: Number,
+    name: {
+        type: String,
+        required: [true, "Please check the data entry."]
+    },
+    rating: {
+        type: Number,
+        min: 1,
+        max: 10
+    },
     review: String
 });
 
 const personSchema = new mongoose.Schema ({
     name: String,
-    age: Number
+    age: Number,
+    favoriteFruit: fruitSchema
 });
 
 // Use schema to create mongoose model
@@ -44,10 +52,48 @@ const kiwi = new Fruit({
     review: "good kiwi"
 });
 
-const person = new Person ({
-    name: "John",
-    age: 37
+const peach = new Fruit({
+    name: "peach",
+    rating: 10,
+    review: "awesome!"
 });
+
+const pineapple = new Fruit({
+    name: "pineapple",
+    rating: 9,
+    review: "awesome pineapple!"
+});
+pineapple.save();
+
+const mango = new Fruit({
+    name: "mango",
+    rating: 10,
+    review: "awesome mango!"
+});
+mango.save();
+
+Person.updateOne(
+    {
+        name: "John",
+    },
+    {
+        favoriteFruit: mango
+    },
+    function(err) {
+        if(err){
+            console.log(err);
+        } else {
+            console.log("done");
+        }
+    }
+);
+
+const person = new Person ({
+    name: "Amy",
+    age: 12,
+    favoriteFruit: pineapple
+});
+
 
 // Save fruit docs into Fruit collection
 //fruit.save();
@@ -70,5 +116,17 @@ Fruit.find(function(err, fruits) {
         fruits.forEach(function(fruit) {
             console.log(fruit.name);
         });
+    }
+});
+
+
+Fruit.deleteOne({
+    name: "banana",
+    function (err) {
+        if(err) {
+            console.log(err);
+        } else {
+            console.log("successfully done."); 
+        }
     }
 });
