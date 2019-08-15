@@ -1,72 +1,74 @@
-const MongoClient = require('mongodb').MongoClient;
-// everything on assert are related to node js app or ios app
-// it always to do with testing
-const assert = require('assert');
+const mongoose = require('mongoose');
 
-// Connection URL
-const url = 'mongodb://localhost:27017';
+// Use mongoose to connect to the fruitsDB
+mongoose.connect("mongodb://localhost:27017/fruitsDB", { useNewUrlParser: true });
 
-// Database Name
-const dbName = 'fruitsdb';
-
-// Create a new MongoClient
-const client = new MongoClient(url, { useNewUrlParser: true });
-
-// Use connect method to connect to the Server
-client.connect(function (err) {
-    assert.equal(null, err);
-    console.log("Connected successfully to server");
-
-    const db = client.db(dbName);
-
-    // insertDocuments(db, function () {
-    //     client.close();
-    // }); 
-    findDocuments(db, function () {
-        client.close();
-    });
+const fruitSchema = new mongoose.Schema ({
+    name: String,
+    rating: Number,
+    review: String
 });
 
+const personSchema = new mongoose.Schema ({
+    name: String,
+    age: Number
+});
 
-const insertDocuments = function (db, callback) {
-    // Get the documents collection
-    const collection = db.collection('fruits');
-    // Insert some documents
-    collection.insertMany([
-        {
-            name: "apple",
-            score: 8,
-            review: "great"
-        },
-        {
-            name: "banana",
-            score: 3,
-            review: "bad"
-        },
-        {
-            name: "orange",
-            score: 5,
-            review: "good"
-        }
-    ], function (err, result) {
-        // make sure there are no errors when inserting docs
-        assert.equal(err, null);
-        // ensure there are three results in the collection
-        assert.equal(3, result.result.n);
-        assert.equal(3, result.ops.length);
-        console.log("Inserted 3 documents into the collection");
-        callback(result);
-    });
-}
+// Use schema to create mongoose model
+const Fruit = mongoose.model("Fruit", fruitSchema);
 
-const findDocuments = function (db, callback) {
-    // Get the documents collection
-    const collection = db.collection('fruits');
-    // Find some documents
-    collection.find({}).toArray(function (err, fruits) {
-        assert.equal(err, null);
-        console.log("Found the following records");
-        console.log(fruits)
-        callback(fruits);
-    });
-}
+const Person = mongoose.model("Person", personSchema);
+
+// Create fruit doc from Fruit model
+const fruit = new Fruit ({
+    name: "apple",
+    rating: 5,
+    review: "good"
+});
+
+const orange = new Fruit({
+    name: "orange",
+    rating: 8,
+    review: "good orange"
+});
+
+const banana = new Fruit({
+    name: "banana",
+    rating: 6,
+    review: "good banana"
+});
+
+const kiwi = new Fruit({
+    name: "kiwi",
+    rating: 7,
+    review: "good kiwi"
+});
+
+const person = new Person ({
+    name: "John",
+    age: 37
+});
+
+// Save fruit docs into Fruit collection
+//fruit.save();
+person.save();
+
+// Fruit.insertMany([kiwi, orange, banana], function(err) {
+//     if(err) {
+//         console.log(err);
+//     } else {
+//         console.log("Success!");
+//     }
+// });
+
+Fruit.find(function(err, fruits) {
+    if(err) {
+        console.log(err);
+    } else {
+        mongoose.connection.close()
+        console.log(fruits);
+        fruits.forEach(function(fruit) {
+            console.log(fruit.name);
+        });
+    }
+});
